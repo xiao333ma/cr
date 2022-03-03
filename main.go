@@ -27,7 +27,7 @@ func main() {
 
 	host = stringArr[0]
 
-	if !strings.HasPrefix(host, "https://") {
+	if !strings.HasPrefix(host, "https://") && !strings.HasPrefix(host, "http://") {
 		host = strings.ReplaceAll(host, ":", "/")
 		host = "https://" + host
 	}
