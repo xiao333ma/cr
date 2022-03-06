@@ -14,7 +14,7 @@ var f = flag.Bool("f", false, "发起一个 current branch ➜ feature 的 CR")
 var d = flag.Bool("d", false, "发起一个 current branch ➜ develop 的 CR")
 var s = flag.String("s", "", "source branch")
 var t = flag.String("t", "", "target branch")
-var p = flag.String("p", "", "子目录")
+var p = flag.String("p", "", "子目录，进入子目录发起 CR，省去了 cd")
 
 var reset = "\033[0m"
 var red = "\033[31m"
@@ -24,12 +24,11 @@ func main() {
 
 	flag.Parse()
 
-	if len(os.Args) == 1 {
-		open()
+	if len(*p) > 0 && !enterTargetPath(*p) {
 		return
 	}
 
-	if len(*p) > 0 && !enterTargetPath(*p) {
+	if !isGitRepo() {
 		return
 	}
 
@@ -45,6 +44,11 @@ func main() {
 
 	if len(*s) > 0 && len(*t) > 0 {
 		merge(*s, *t)
+		return
+	}
+
+	if len(os.Args) == 1 {
+		open()
 		return
 	}
 }
@@ -153,4 +157,15 @@ func isRemoteBranchExist(branchName string, repoURL string) bool {
 	c := exec.Command("git", "ls-remote", "--heads", repoURL, branchName)
 	remote, _ := c.CombinedOutput()
 	return len(remote) > 0
+}
+
+func isGitRepo() bool {
+	c := exec.Command("git", "rev-parse", "--is-inside-work-tree")
+	res, err := c.CombinedOutput()
+	flag := strings.TrimSuffix(string(res), "\n")
+	if err == nil && string(flag) == "true" {
+		return true
+	}
+	fmt.Println(red, flag, reset)
+	return false
 }
