@@ -1,3 +1,3 @@
-module gitcr
+module cr
 
 go 1.17
