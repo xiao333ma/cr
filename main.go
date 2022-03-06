@@ -69,7 +69,7 @@ func mergeToFeature() {
 	featureBranch := getFeatureBranch(currentBranch)
 
 	if !isRemoteBranchExist(featureBranch, getRepoURL()) {
-		fmt.Println(red, "无法发起 CR", currentBranch, "对应的 feature 分支", featureBranch, "不存在", reset)
+		fmt.Println(red, "无法发起 CR:", currentBranch, "对应的 feature 分支", featureBranch, "不存在", reset)
 		return
 	}
 	url := buildMergeRequestURL(currentBranch, featureBranch)
@@ -86,12 +86,12 @@ func mergeToDevelop() {
 func merge(sourceBranch string, targetBranch string) {
 
 	if !isRemoteBranchExist(sourceBranch, getRepoURL()) {
-		fmt.Println(red, "无法发起 CR", sourceBranch, "不存在", reset)
+		fmt.Println(red, "无法发起 CR:", sourceBranch, "不存在", reset)
 		return
 	}
 
 	if !isRemoteBranchExist(targetBranch, getRepoURL()) {
-		fmt.Println(red, "无法发起 CR", targetBranch, "不存在", reset)
+		fmt.Println(red, "无法发起 CR:", targetBranch, "不存在", reset)
 		return
 	}
 
