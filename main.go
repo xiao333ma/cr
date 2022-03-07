@@ -217,7 +217,6 @@ func findReleaseBranches()([]string, error)  {
 		r = append(r,b[1])
 	}
 
-	r = append(r, "release/9.11.1")
 	return r, nil
 }
 
