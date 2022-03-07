@@ -55,10 +55,7 @@ func main() {
 		return
 	}
 
-	if len(os.Args) == 1 {
-		open()
-		return
-	}
+	open()
 }
 
 func enterTargetPath(path string) bool {
