@@ -17,7 +17,7 @@ var d = flag.Bool("d", false, "发起一个 current branch ➜ develop 的 CR")
 var r = flag.Bool("r", false, "发起一个 current branch ➜ release 的 CR")
 var s = flag.String("s", "", "source branch")
 var t = flag.String("t", "", "target branch")
-var p = flag.String("p", "", "子目录，进入子目录发起 CR，省去了 cd")
+var p = flag.String("p", "", "子目录，进入子目录发起 CR，省去了 cd 命令")
 
 var reset = "\033[0m"
 var red = "\033[31m"
