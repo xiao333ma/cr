@@ -1,10 +1,12 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 )
 
@@ -12,6 +14,7 @@ var crPath = "/merge_requests/new"
 
 var f = flag.Bool("f", false, "发起一个 current branch ➜ feature 的 CR")
 var d = flag.Bool("d", false, "发起一个 current branch ➜ develop 的 CR")
+var r = flag.Bool("r", false, "发起一个 current branch ➜ release 的 CR")
 var s = flag.String("s", "", "source branch")
 var t = flag.String("t", "", "target branch")
 var p = flag.String("p", "", "子目录，进入子目录发起 CR，省去了 cd")
@@ -39,6 +42,11 @@ func main() {
 
 	if *d {
 		mergeToDevelop()
+		return
+	}
+
+	if *r {
+		mergeToRelease()
 		return
 	}
 
@@ -85,6 +93,21 @@ func mergeToDevelop() {
 	currentBranch := getCurrentBranch()
 	url := buildMergeRequestURL(currentBranch, "develop")
 	openURL(url)
+}
+
+func mergeToRelease()  {
+
+	branches , err := findReleaseBranches()
+	if err != nil {
+		return
+	}
+
+	releaseBranchName := getTargetReleaseBranch(branches)
+	if len(releaseBranchName) > 0 {
+		currentBranch := getCurrentBranch()
+		url := buildMergeRequestURL(currentBranch, releaseBranchName)
+		openURL(url)
+	}
 }
 
 func merge(sourceBranch string, targetBranch string) {
@@ -168,4 +191,61 @@ func isGitRepo() bool {
 	}
 	fmt.Println(red, flag, reset)
 	return false
+}
+
+func findReleaseBranches()([]string, error)  {
+	c := exec.Command("bash", "-c", "git ls-remote --q | grep refs/heads/release/ | awk '{print $2}'")
+	res, err := c.CombinedOutput()
+	if err != nil {
+		fmt.Println(red, err, reset)
+		return nil,err
+	}
+
+	branches := string(res)
+	branchesArray := strings.Split(strings.Trim(branches, "\n"), "\n")
+	if len(branchesArray) < 0 {
+		err = errors.New("没有 release 分支")
+		fmt.Println(err)
+		return nil, err
+	}
+
+	r := make([]string, 0)
+
+	for _, v := range branchesArray {
+		v = strings.Trim(v, "\n")
+		b := strings.Split(v, "refs/heads/")
+		r = append(r,b[1])
+	}
+
+	r = append(r, "release/9.11.1")
+	return r, nil
+}
+
+func getTargetReleaseBranch(branches []string) string  {
+
+	if len(branches) == 1 {
+		return  branches[0]
+	} else {
+		fmt.Println("选择将要合入的分支")
+		for i, branch := range branches {
+			fmt.Println(i, branch)
+		}
+
+		var indexString string
+		fmt.Scanln(&indexString)
+
+		index, err := strconv.Atoi(indexString)
+
+		if err != nil {
+			fmt.Println("输入有误")
+			return ""
+		}
+
+		if index < len(branches) {
+			return branches[index]
+		} else {
+			fmt.Println("输入有误")
+			return  ""
+		}
+	}
 }
