@@ -10,13 +10,14 @@ import (
 	"strings"
 )
 
-var crPath = "/merge_requests/new"
+var crPath = "/merge_requests"
 
 var f = flag.Bool("f", false, "发起一个 current branch ➜ feature 的 CR")
 var d = flag.Bool("d", false, "发起一个 current branch ➜ develop 的 CR")
 var r = flag.Bool("r", false, "发起一个 current branch ➜ release 的 CR")
-var s = flag.String("s", "", "source branch")
-var t = flag.String("t", "", "target branch")
+var l = flag.Bool("l", false, "打开当前 repo 的 CR list")
+var s = flag.String("s", "", "source branch, 配合 -t 使用 可发起 source ➜ target 的 CR")
+var t = flag.String("t", "", "target branch, 配合 -t 使用 可发起 source ➜ target 的 CR")
 var p = flag.String("p", "", "子目录，进入子目录发起 CR，省去了 cd 命令")
 
 var reset = "\033[0m"
@@ -55,6 +56,11 @@ func main() {
 		return
 	}
 
+	if *l {
+		openURL(getCRBaseURL())
+		return
+	}
+
 	open()
 }
 
@@ -69,7 +75,7 @@ func enterTargetPath(path string) bool {
 }
 
 func open() {
-	openURL(getNewCRPath())
+	openURL(getCRNewURL())
 }
 
 func mergeToFeature() {
@@ -77,7 +83,7 @@ func mergeToFeature() {
 	currentBranch := getCurrentBranch()
 	featureBranch := getFeatureBranch(currentBranch)
 
-	if !isRemoteBranchExist(featureBranch, getRepoURL()) {
+	if !isRemoteBranchExist(featureBranch, getRepoGitURL()) {
 		fmt.Println(red, "无法发起 CR:", currentBranch, "对应的 feature 分支", featureBranch, "不存在", reset)
 		return
 	}
@@ -109,12 +115,12 @@ func mergeToRelease()  {
 
 func merge(sourceBranch string, targetBranch string) {
 
-	if !isRemoteBranchExist(sourceBranch, getRepoURL()) {
+	if !isRemoteBranchExist(sourceBranch, getRepoGitURL()) {
 		fmt.Println(red, "无法发起 CR:", sourceBranch, "不存在", reset)
 		return
 	}
 
-	if !isRemoteBranchExist(targetBranch, getRepoURL()) {
+	if !isRemoteBranchExist(targetBranch, getRepoGitURL()) {
 		fmt.Println(red, "无法发起 CR:", targetBranch, "不存在", reset)
 		return
 	}
@@ -124,7 +130,7 @@ func merge(sourceBranch string, targetBranch string) {
 }
 
 func buildMergeRequestURL(sourceBranch string, targetBranch string) string {
-	url := getNewCRPath()
+	url := getCRNewURL()
 
 	url += "?merge_request[source_branch]=" + sourceBranch
 	url += "&"
@@ -139,16 +145,26 @@ func openURL(url string) {
 	c.Run()
 }
 
-func getNewCRPath() string {
-	url := getRepoURL()
-	stringArr := strings.Split(url, ".git")
-	url = stringArr[0]
-	url += crPath
+func getCRBaseURL() string {
+	return getRepoURL() + crPath
+}
+
+func getCRNewURL() string {
+	url := getCRBaseURL()
+	url += "/new"
 	return url
 }
 
+/*返回当前 repo 的 URL */
 func getRepoURL() string {
+	url := getRepoGitURL()
+	stringArr := strings.Split(url, ".git")
+	url = stringArr[0]
+	return url
+}
 
+/*返回当前 repo 的 URL，后边带 .git */
+func getRepoGitURL() string {
 	c := exec.Command("git", "ls-remote", "--get-url")
 	remote, _ := c.CombinedOutput()
 	stringArr := strings.Split(string(remote), "@")
