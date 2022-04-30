@@ -102,6 +102,7 @@ func mergeToRelease()  {
 
 	branches , err := findReleaseBranches()
 	if err != nil {
+		fmt.Println(red, "无法发起 CR: 找不到对应的 release 分支", reset)
 		return
 	}
 
@@ -215,8 +216,12 @@ func findReleaseBranches()([]string, error)  {
 	}
 
 	branches := string(res)
+	if len(branches) == 0 {
+		return nil, errors.New("没有 release 分支")
+	}
+
 	branchesArray := strings.Split(strings.Trim(branches, "\n"), "\n")
-	if len(branchesArray) < 0 {
+	if len(branchesArray) == 0 {
 		err = errors.New("没有 release 分支")
 		fmt.Println(err)
 		return nil, err
