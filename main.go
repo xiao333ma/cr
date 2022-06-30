@@ -95,24 +95,20 @@ func mergeToFeature() {
 	currentBranch := getCurrentBranch()
 	featureBranch := getFeatureBranch(currentBranch)
 
-	if !isRemoteBranchExist(featureBranch, getRepoGitURL()) {
-		fmt.Println(red, "无法发起 CR:", currentBranch, "对应的 feature 分支", featureBranch, "不存在", reset)
-		return
-	}
-	url := buildMergeRequestURL(currentBranch, featureBranch)
-	openURL(url)
+	merge(currentBranch, featureBranch)
 }
 
 func mergeToDevelop() {
+	merge(getCurrentBranch(), "develop")
+}
 
-	currentBranch := getCurrentBranch()
-	developExist := isRemoteBranchExist("develop", getRepoGitURL())
-	if !developExist {
-		fmt.Println(red, "无法发起 CR: 找不到对应的 develop 分支", reset)
-		return
-	}
-	url := buildMergeRequestURL(currentBranch, "develop")
-	openURL(url)
+func mergeToMaster()  {
+	merge(getCurrentBranch(), "master")
+
+}
+
+func mergeToMain()  {
+	merge(getCurrentBranch(), "main")
 }
 
 func mergeToRelease()  {
@@ -125,32 +121,8 @@ func mergeToRelease()  {
 
 	releaseBranchName := getTargetReleaseBranch(branches)
 	if len(releaseBranchName) > 0 {
-		currentBranch := getCurrentBranch()
-		url := buildMergeRequestURL(currentBranch, releaseBranchName)
-		openURL(url)
+		merge(getCurrentBranch(), releaseBranchName)
 	}
-}
-
-func mergeToMaster()  {
-	currentBranch := getCurrentBranch()
-	masterExist := isRemoteBranchExist("master", getRepoGitURL())
-	if !masterExist {
-		fmt.Println(red, "无法发起 CR: 找不到对应的 master 分支", reset)
-		return
-	}
-	url := buildMergeRequestURL(currentBranch, "master")
-	openURL(url)
-}
-
-func mergeToMain()  {
-	currentBranch := getCurrentBranch()
-	mainExist := isRemoteBranchExist("main", getRepoGitURL())
-	if !mainExist {
-		fmt.Println(red, "无法发起 CR: 找不到对应的 main 分支", reset)
-		return
-	}
-	url := buildMergeRequestURL(currentBranch, "main")
-	openURL(url)
 }
 
 func merge(sourceBranch string, targetBranch string) {
