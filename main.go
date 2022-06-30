@@ -15,6 +15,8 @@ var crPath = "/merge_requests"
 var f = flag.Bool("f", false, "发起一个 current branch ➜ feature 的 CR")
 var d = flag.Bool("d", false, "发起一个 current branch ➜ develop 的 CR")
 var r = flag.Bool("r", false, "发起一个 current branch ➜ release 的 CR")
+var m = flag.Bool("m", false, "发起一个 current branch ➜ master 的 CR")
+var M = flag.Bool("M", false, "发起一个 current branch ➜ Main 的 CR")
 var l = flag.Bool("l", false, "打开当前 repo 的 CR list")
 var s = flag.String("s", "", "source branch, 配合 -t 使用 可发起 source ➜ target 的 CR")
 var t = flag.String("t", "", "target branch, 配合 -t 使用 可发起 source ➜ target 的 CR")
@@ -48,6 +50,16 @@ func main() {
 
 	if *r {
 		mergeToRelease()
+		return
+	}
+
+	if *m {
+		mergeToMaster()
+		return
+	}
+
+	if *M {
+		mergeToMain()
 		return
 	}
 
@@ -94,6 +106,11 @@ func mergeToFeature() {
 func mergeToDevelop() {
 
 	currentBranch := getCurrentBranch()
+	developExist := isRemoteBranchExist("develop", getRepoGitURL())
+	if !developExist {
+		fmt.Println(red, "无法发起 CR: 找不到对应的 develop 分支", reset)
+		return
+	}
 	url := buildMergeRequestURL(currentBranch, "develop")
 	openURL(url)
 }
@@ -112,6 +129,28 @@ func mergeToRelease()  {
 		url := buildMergeRequestURL(currentBranch, releaseBranchName)
 		openURL(url)
 	}
+}
+
+func mergeToMaster()  {
+	currentBranch := getCurrentBranch()
+	masterExist := isRemoteBranchExist("master", getRepoGitURL())
+	if !masterExist {
+		fmt.Println(red, "无法发起 CR: 找不到对应的 master 分支", reset)
+		return
+	}
+	url := buildMergeRequestURL(currentBranch, "master")
+	openURL(url)
+}
+
+func mergeToMain()  {
+	currentBranch := getCurrentBranch()
+	mainExist := isRemoteBranchExist("main", getRepoGitURL())
+	if !mainExist {
+		fmt.Println(red, "无法发起 CR: 找不到对应的 main 分支", reset)
+		return
+	}
+	url := buildMergeRequestURL(currentBranch, "main")
+	openURL(url)
 }
 
 func merge(sourceBranch string, targetBranch string) {
