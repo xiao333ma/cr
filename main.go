@@ -19,7 +19,7 @@ var m = flag.Bool("m", false, "发起一个 current branch ➜ master 的 CR")
 var M = flag.Bool("M", false, "发起一个 current branch ➜ Main 的 CR")
 var l = flag.Bool("l", false, "打开当前 repo 的 CR list")
 var s = flag.String("s", "", "source branch, 配合 -t 使用 可发起 source ➜ target 的 CR")
-var t = flag.String("t", "", "target branch, 配合 -t 使用 可发起 source ➜ target 的 CR")
+var t = flag.String("t", "", "target branch, 配合 -s 使用 可发起 source ➜ target 的 CR")
 var p = flag.String("p", "", "子目录，进入子目录发起 CR，省去了 cd 命令")
 
 var reset = "\033[0m"
@@ -127,14 +127,18 @@ func mergeToRelease()  {
 
 func merge(sourceBranch string, targetBranch string) {
 
-	if !isRemoteBranchExist(sourceBranch, getRepoGitURL()) {
-		fmt.Println(red, "无法发起 CR:", sourceBranch, "不存在", reset)
-		return
+	if !strings.Contains(sourceBranch, "release") {
+		if !isRemoteBranchExist(sourceBranch, getRepoGitURL()) {
+			fmt.Println(red, "无法发起 CR:", sourceBranch, "不存在", reset)
+			return
+		}
 	}
 
-	if !isRemoteBranchExist(targetBranch, getRepoGitURL()) {
-		fmt.Println(red, "无法发起 CR:", targetBranch, "不存在", reset)
-		return
+	if !strings.Contains(targetBranch, "release") {
+		if !isRemoteBranchExist(targetBranch, getRepoGitURL()) {
+			fmt.Println(red, "无法发起 CR:", targetBranch, "不存在", reset)
+			return
+		}
 	}
 
 	url := buildMergeRequestURL(sourceBranch, targetBranch)
