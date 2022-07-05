@@ -77,10 +77,17 @@ func main() {
 }
 
 func enterTargetPath(path string) bool {
-	pwd, _ := os.Getwd()
-	err := os.Chdir(pwd + "/" + *p)
+	targetPath := ""
+	if strings.HasPrefix(path, "/") {
+		targetPath = path
+	} else {
+		pwd, _ := os.Getwd()
+		targetPath = pwd + "/" + path
+	}
+
+	err := os.Chdir(targetPath)
 	if err != nil {
-		fmt.Println("无法进入", *p)
+		fmt.Println("无法进入", *p, err)
 		return false
 	}
 	return true
