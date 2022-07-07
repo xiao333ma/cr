@@ -87,7 +87,7 @@ func enterTargetPath(path string) bool {
 
 	err := os.Chdir(targetPath)
 	if err != nil {
-		fmt.Println("无法进入", *p, err)
+		fmt.Println(red, err, reset)
 		return false
 	}
 	return true
